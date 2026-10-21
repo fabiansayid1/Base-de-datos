@@ -2,6 +2,7 @@ package com.example.basededatos
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -17,11 +18,17 @@ class MainActivity : AppCompatActivity() {
 
         // Codigo aqui
         val tvCrearCuenta = findViewById<TextView>(R.id.tvCrearCuenta)
+        val btnIngresar = findViewById<Button>(R.id.btnIngresar)
 
         tvCrearCuenta.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
+        }
 
+        btnIngresar.setOnClickListener {
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 }
