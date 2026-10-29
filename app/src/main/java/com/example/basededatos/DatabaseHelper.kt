@@ -14,11 +14,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
     companion object {
         private const val DATABASE_NAME = "studypulse.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         private const val TABLE_USUARIOS = "usuarios"
         private const val COL_ID = "id"
         private const val COL_NOMBRE = "nombre"
+        private const val COL_UNIVERSIDAD = "universidad"
         private const val COL_CORREO = "correo"
         private const val COL_PASSWORD = "contrasena"
     }
@@ -28,6 +29,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
             CREATE TABLE $TABLE_USUARIOS (
                 $COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COL_NOMBRE TEXT NOT NULL,
+                $COL_UNIVERSIDAD TEXT NOT NULL,
                 $COL_CORREO TEXT NOT NULL UNIQUE,
                 $COL_PASSWORD TEXT NOT NULL
             )
@@ -40,10 +42,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         onCreate(db)
     }
 
-    fun registrarUsuario(nombre: String, correo: String, password: String): Boolean {
+    fun registrarUsuario(nombre: String, universidad: String, correo: String, password: String): Boolean {
         val db = writableDatabase
         val datos = ContentValues().apply {
             put(COL_NOMBRE, nombre.trim())
+            put(COL_UNIVERSIDAD, universidad.trim())
             put(COL_CORREO, correo.trim().lowercase())
             put(COL_PASSWORD, password)
         }
@@ -59,5 +62,19 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         return db.rawQuery(query, arrayOf(correo.trim().lowercase(), password)).use { cursor ->
             cursor.moveToFirst()
         }
+    }
+
+    fun obtenerNombreYUniversidad(correo: String): Pair<String, String>? {
+        val db = readableDatabase
+        val query = "SELECT $COL_NOMBRE, $COL_UNIVERSIDAD FROM $TABLE_USUARIOS WHERE $COL_CORREO = ? LIMIT 1"
+
+        db.rawQuery(query, arrayOf(correo.trim().lowercase())).use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nombre = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE))
+                val universidad = cursor.getString(cursor.getColumnIndexOrThrow(COL_UNIVERSIDAD))
+                return Pair(nombre, universidad)
+            }
+        }
+        return null
     }
 }

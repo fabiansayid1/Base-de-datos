@@ -8,9 +8,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +20,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvCrearCuenta: TextView
 
     private lateinit var dbHelper: DatabaseHelper
+
+    // Lanzador para recibir los datos devueltos desde RegisterActivity
+    private val registerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val correo = result.data?.getStringExtra("EXTRA_EMAIL")
+            val password = result.data?.getStringExtra("EXTRA_PASSWORD")
+
+            // Auto-rellenar las casillas del Login
+            correo?.let { etCorreo.setText(it) }
+            password?.let { etPassword.setText(it) }
+
+            Toast.makeText(this, "Datos cargados. ¡Presiona Ingresar!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
         tvCrearCuenta.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+            registerLauncher.launch(intent)
         }
 
         btnIngresar.setOnClickListener {
@@ -66,7 +81,9 @@ class MainActivity : AppCompatActivity() {
         if (esValido) {
             Toast.makeText(this, "¡Inicio de sesión exitoso!", Toast.LENGTH_SHORT).show()
 
-            val intent = Intent(this, HomeActivity::class.java)
+            val intent = Intent(this, HomeActivity::class.java).apply {
+                putExtra("USER_EMAIL", correo)
+            }
             startActivity(intent)
             finish()
         } else {
